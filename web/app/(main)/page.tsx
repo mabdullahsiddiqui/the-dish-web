@@ -2,227 +2,226 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, MapPin, Star, Utensils } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { MapPin, Star, Utensils } from 'lucide-react';
+import { HeroWith3D } from '@/components/3d/HeroWith3D';
+import { AnimatedSearchBar } from '@/components/search/AnimatedSearchBar';
+import { TiltCard } from '@/components/cards/TiltCard';
+import { GlassCard } from '@/components/cards/GlassCard';
+import { Button3D } from '@/components/ui/Button3D';
+import { Badge3D } from '@/components/ui/Badge3D';
+import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
+import { FadeInUp } from '@/components/animations/FadeInUp';
+import { StaggerChildren } from '@/components/animations/StaggerChildren';
 
 function HomePageContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+  const handleSearch = (value: string) => {
+    if (value.trim()) {
+      router.push(`/search?q=${encodeURIComponent(value.trim())}`);
     }
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#0f172a]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Discover Your Next
-              <br />
-              <span className="text-yellow-300">Favorite Dish</span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Find restaurants that match your dietary preferences and taste buds
-            </p>
-            
-            {/* Hero Search */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Input
-                    type="text"
-                    placeholder="Search restaurants, cuisines, or dishes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 h-14 text-lg bg-white text-gray-900"
-                  />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                </div>
-                <Button type="submit" size="lg" className="h-14 px-8 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold">
-                  Search
-                </Button>
-              </div>
-            </form>
-          </div>
+      <HeroWith3D
+        title="Discover Your Next Favorite Dish"
+        subtitle="Find halal restaurants that match your dietary preferences and taste buds"
+        ctaText="Start Exploring"
+        particleColor="#10b981"
+        onCtaClick={() => router.push('/places')}
+      />
+
+      {/* Search Bar Section */}
+      <section className="py-8 bg-[#0f172a]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatedSearchBar
+            placeholder="Search restaurants, cuisines, or dishes..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSearch={handleSearch}
+          />
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-[#0f172a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose The Dish?
-            </h2>
-            <p className="text-xl text-gray-600">
-              More than just reviews - find places that truly match your preferences
-            </p>
-          </div>
+          <FadeInUp>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Why Choose The Dish?
+              </h2>
+              <p className="text-xl text-gray-300">
+                More than just reviews - find places that truly match your preferences
+              </p>
+            </div>
+          </FadeInUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Utensils className="w-6 h-6 text-blue-600" />
+          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <TiltCard>
+              <GlassCard hover className="p-6 text-center h-full">
+                <div className="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AnimatedIcon name="utensils" size={32} color="#6366f1" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Dietary Preferences</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-semibold mb-2 text-white">Dietary Preferences</h3>
+                <p className="text-gray-300">
                   Filter by halal, kosher, vegan, gluten-free, and more. Find restaurants that cater to your specific needs.
                 </p>
-              </CardContent>
-            </Card>
+              </GlassCard>
+            </TiltCard>
 
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="w-6 h-6 text-green-600" />
+            <TiltCard>
+              <GlassCard hover className="p-6 text-center h-full">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AnimatedIcon name="mapPin" size={32} color="#10b981" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">GPS Verified</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-semibold mb-2 text-white">GPS Verified</h3>
+                <p className="text-gray-300">
                   All reviews are GPS-verified to ensure authenticity. Real reviews from real visitors.
                 </p>
-              </CardContent>
-            </Card>
+              </GlassCard>
+            </TiltCard>
 
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-6 h-6 text-yellow-600" />
+            <TiltCard>
+              <GlassCard hover className="p-6 text-center h-full">
+                <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AnimatedIcon name="star" size={32} color="#f59e0b" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Community Driven</h3>
-                <p className="text-gray-600">
+                <h3 className="text-xl font-semibold mb-2 text-white">Community Driven</h3>
+                <p className="text-gray-300">
                   Join a community of food lovers sharing honest reviews and recommendations.
                 </p>
-              </CardContent>
-            </Card>
-          </div>
+              </GlassCard>
+            </TiltCard>
+          </StaggerChildren>
         </div>
       </section>
 
       {/* Recent Reviews Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-[#1e293b]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Recent Reviews
-            </h2>
-            <p className="text-xl text-gray-600">
-              See what our community is discovering
-            </p>
-          </div>
+          <FadeInUp>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Recent Reviews
+              </h2>
+              <p className="text-xl text-gray-300">
+                See what our community is discovering
+              </p>
+            </div>
+          </FadeInUp>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Sample review cards - these would come from actual API data */}
-            <Card>
-              <CardContent className="p-6">
+            <TiltCard>
+              <GlassCard hover className="p-6 h-full">
                 <div className="flex items-center mb-3">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <span className="ml-2 text-sm text-gray-600">2 hours ago</span>
+                  <span className="ml-2 text-sm text-gray-400">2 hours ago</span>
                 </div>
-                <p className="text-gray-800 mb-3">
+                <p className="text-gray-200 mb-3">
                   "Amazing halal options and the service was excellent. The lamb biryani was perfectly spiced!"
                 </p>
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">Sarah M.</span> reviewed{' '}
-                  <span className="font-medium text-gray-900">Spice Garden</span>
+                <div className="text-sm text-gray-400 mb-3">
+                  <span className="font-medium text-white">Sarah M.</span> reviewed{' '}
+                  <span className="font-medium text-white">Spice Garden</span>
                 </div>
                 <div className="mt-2">
-                  <span className="inline-block bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
-                    Halal
-                  </span>
+                  <Badge3D variant="halal" />
                 </div>
-              </CardContent>
-            </Card>
+              </GlassCard>
+            </TiltCard>
 
-            <Card>
-              <CardContent className="p-6">
+            <TiltCard>
+              <GlassCard hover className="p-6 h-full">
                 <div className="flex items-center mb-3">
                   <div className="flex">
                     {[...Array(4)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                     ))}
-                    <Star className="w-4 h-4 text-gray-300" />
+                    <Star className="w-4 h-4 text-gray-500" />
                   </div>
-                  <span className="ml-2 text-sm text-gray-600">5 hours ago</span>
+                  <span className="ml-2 text-sm text-gray-400">5 hours ago</span>
                 </div>
-                <p className="text-gray-800 mb-3">
+                <p className="text-gray-200 mb-3">
                   "Great vegan options! The mushroom risotto was creamy and flavorful. Will definitely come back."
                 </p>
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">Alex K.</span> reviewed{' '}
-                  <span className="font-medium text-gray-900">Green Kitchen</span>
+                <div className="text-sm text-gray-400 mb-3">
+                  <span className="font-medium text-white">Alex K.</span> reviewed{' '}
+                  <span className="font-medium text-white">Green Kitchen</span>
                 </div>
                 <div className="mt-2">
-                  <span className="inline-block bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
-                    Vegan
-                  </span>
+                  <Badge3D variant="custom">
+                    <span>Vegan</span>
+                  </Badge3D>
                 </div>
-              </CardContent>
-            </Card>
+              </GlassCard>
+            </TiltCard>
 
-            <Card>
-              <CardContent className="p-6">
+            <TiltCard>
+              <GlassCard hover className="p-6 h-full">
                 <div className="flex items-center mb-3">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <span className="ml-2 text-sm text-gray-600">1 day ago</span>
+                  <span className="ml-2 text-sm text-gray-400">1 day ago</span>
                 </div>
-                <p className="text-gray-800 mb-3">
+                <p className="text-gray-200 mb-3">
                   "Best Korean BBQ in the city! Authentic flavors and great atmosphere. The kimchi was perfect."
                 </p>
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">Mike L.</span> reviewed{' '}
-                  <span className="font-medium text-gray-900">Seoul Kitchen</span>
+                <div className="text-sm text-gray-400 mb-3">
+                  <span className="font-medium text-white">Mike L.</span> reviewed{' '}
+                  <span className="font-medium text-white">Seoul Kitchen</span>
                 </div>
                 <div className="mt-2">
-                  <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                    Korean
-                  </span>
+                  <Badge3D variant="custom">
+                    <span>Korean</span>
+                  </Badge3D>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </GlassCard>
+            </TiltCard>
+          </StaggerChildren>
 
-          <div className="text-center mt-8">
-            <Button variant="outline" onClick={() => router.push('/places')}>
-              View All Reviews
-            </Button>
-          </div>
+          <FadeInUp delay={0.4}>
+            <div className="text-center mt-8">
+              <Button3D variant="outline" onClick={() => router.push('/places')}>
+                View All Reviews
+              </Button3D>
+            </div>
+          </FadeInUp>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-[#0f172a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Discover Great Food?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join our community and start exploring restaurants near you
-          </p>
-          <div className="space-x-4">
-            <Button size="lg" onClick={() => router.push('/register')}>
-              Sign Up Now
-            </Button>
-            <Button variant="outline" size="lg" onClick={() => router.push('/places')}>
-              Explore Restaurants
-            </Button>
-          </div>
+          <FadeInUp>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Ready to Discover Great Food?
+            </h2>
+            <p className="text-xl text-gray-300 mb-8">
+              Join our community and start exploring restaurants near you
+            </p>
+          </FadeInUp>
+          <FadeInUp delay={0.2}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button3D size="lg" onClick={() => router.push('/register')} glow>
+                Sign Up Now
+              </Button3D>
+              <Button3D variant="outline" size="lg" onClick={() => router.push('/places')}>
+                Explore Restaurants
+              </Button3D>
+            </div>
+          </FadeInUp>
         </div>
       </section>
     </div>

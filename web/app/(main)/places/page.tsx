@@ -1,19 +1,26 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react';
-import { Grid, List, SlidersHorizontal, MapPin, Sparkles, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/features/search/search-filters';
-import { PlaceCard } from '@/components/features/places/place-card';
-import { LoadingSpinner, LoadingSkeleton } from '@/components/ui/loading';
+import { useRouter } from 'next/navigation';
+import { Grid, List, MapPin, TrendingUp } from 'lucide-react';
+import { PlaceCard3D } from '@/components/cards/PlaceCard3D';
+import { FilterPanel } from '@/components/search/FilterPanel';
+import { Button3D } from '@/components/ui/Button3D';
+import { GlassCard } from '@/components/cards/GlassCard';
+import { StaggerChildren } from '@/components/animations/StaggerChildren';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { PlaceCardSkeleton } from '@/components/ui/PlaceCardSkeleton';
 import { Pagination } from '@/components/ui/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { usePlaces } from '@/hooks/usePlaces';
 import { SearchPlacesRequest } from '@/types/place';
+import { mapPlaceToCard3D } from '@/lib/utils/place-mapper';
+import { SearchFilters as SearchFiltersType } from '@/components/features/search/search-filters';
 
 function PlacesPageContent() {
   const { useSearchPlaces } = usePlaces();
+  const router = useRouter();
 
   // State
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,49 +86,24 @@ function PlacesPageContent() {
     (filters.radiusKm !== 25 ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Sparkles className="w-6 h-6 text-yellow-300" />
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
-                Discover Amazing Restaurants
-              </h1>
-              <Sparkles className="w-6 h-6 text-yellow-300" />
-            </div>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8">
-              Explore a curated collection of restaurants that match your taste and dietary preferences
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <MapPin className="w-4 h-4" />
-                <span>{totalCount} Restaurants</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Verified Reviews</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-[#0f172a]">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Controls Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <GlassCard className="p-4 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             {/* Left: Filters */}
             <div className="flex items-center gap-3 flex-wrap">
-              <SearchFilters
-                onFiltersChange={handleFiltersChange}
-                initialFilters={filters}
-              />
+              <Button3D
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+              </Button3D>
               {activeFiltersCount > 0 && (
-                <Button
-                  variant="ghost"
+                <Button3D
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     setFilters({
@@ -133,42 +115,81 @@ function PlacesPageContent() {
                     });
                     setCurrentPage(1);
                   }}
-                  className="text-gray-600 hover:text-gray-900"
                 >
                   Clear all
-                </Button>
+                </Button3D>
               )}
             </div>
 
             {/* Right: View Toggle & Results Count */}
             <div className="flex items-center gap-4">
               {!isLoading && places.length > 0 && (
-                <div className="hidden sm:block text-sm text-gray-600">
-                  <span className="font-medium text-gray-900">{totalCount}</span>{' '}
+                <div className="hidden sm:block text-sm text-gray-300">
+                  <span className="font-medium text-white">{totalCount}</span>{' '}
                   {totalCount === 1 ? 'restaurant' : 'restaurants'} found
                 </div>
               )}
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
+              <div className="flex items-center gap-1 glass-card p-1 rounded-lg">
+                <button
                   onClick={() => setViewMode('grid')}
-                  className="px-3"
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-indigo-500 text-white'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
                 >
                   <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
+                </button>
+                <button
                   onClick={() => setViewMode('list')}
-                  className="px-3"
+                  className={`p-2 rounded transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-indigo-500 text-white'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
                 >
                   <List className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </GlassCard>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="mb-6">
+            <FilterPanel
+              filters={[
+                {
+                  title: 'Cuisine Types',
+                  options: [
+                    { label: 'Middle Eastern', value: 'middle-eastern' },
+                    { label: 'Asian', value: 'asian' },
+                    { label: 'Mediterranean', value: 'mediterranean' },
+                  ],
+                  selected: filters.cuisineTypes || [],
+                  onSelectionChange: (values) => {
+                    handleFiltersChange({ ...filters, cuisineTypes: values });
+                  },
+                },
+                {
+                  title: 'Dietary Tags',
+                  options: [
+                    { label: 'Halal', value: 'Halal' },
+                    { label: 'Vegan', value: 'Vegan' },
+                    { label: 'Vegetarian', value: 'Vegetarian' },
+                  ],
+                  selected: filters.dietaryTags || [],
+                  onSelectionChange: (values) => {
+                    handleFiltersChange({ ...filters, dietaryTags: values });
+                  },
+                },
+              ]}
+              onClose={() => setShowFilters(false)}
+              onApply={() => setShowFilters(false)}
+            />
+          </div>
+        )}
 
         {/* Results Section */}
         <div className="space-y-6">
@@ -179,7 +200,7 @@ function PlacesPageContent() {
                 : 'grid-cols-1 max-w-4xl'
             }`}>
               {[...Array(8)].map((_, i) => (
-                <LoadingSkeleton key={i} />
+                <PlaceCardSkeleton key={i} />
               ))}
             </div>
           ) : error ? (
@@ -218,21 +239,21 @@ function PlacesPageContent() {
           ) : (
             <>
               {/* Results Grid */}
-              <div className={`grid gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                  : 'grid-cols-1 max-w-4xl'
-              }`}>
-                {places.map((place, index) => (
-                  <div
+              <StaggerChildren
+                className={`grid gap-6 ${
+                  viewMode === 'grid'
+                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                    : 'grid-cols-1 max-w-4xl'
+                }`}
+              >
+                {places.map((place) => (
+                  <PlaceCard3D
                     key={place.id}
-                    className="opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards]"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <PlaceCard place={place} />
-                  </div>
+                    place={mapPlaceToCard3D(place)}
+                    onClick={() => router.push(`/places/${place.id}`)}
+                  />
                 ))}
-              </div>
+              </StaggerChildren>
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -255,7 +276,7 @@ function PlacesPageContent() {
 export default function PlacesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <LoadingSpinner />
       </div>
     }>

@@ -1,22 +1,27 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Search, Grid, List, SlidersHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { SearchFilters, SearchFilters as SearchFiltersType } from '@/components/features/search/search-filters';
-import { PlaceCard } from '@/components/features/places/place-card';
-import { LoadingSpinner, LoadingSkeleton } from '@/components/ui/loading';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Grid, List } from 'lucide-react';
+import { AnimatedSearchBar } from '@/components/search/AnimatedSearchBar';
+import { FilterPanel } from '@/components/search/FilterPanel';
+import { PlaceCard3D } from '@/components/cards/PlaceCard3D';
+import { GlassCard } from '@/components/cards/GlassCard';
+import { Button3D } from '@/components/ui/Button3D';
+import { StaggerChildren } from '@/components/animations/StaggerChildren';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { PlaceCardSkeleton } from '@/components/ui/PlaceCardSkeleton';
 import { Pagination } from '@/components/ui/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { usePlaces } from '@/hooks/usePlaces';
 import { SearchPlacesRequest } from '@/types/place';
+import { mapPlaceToCard3D } from '@/lib/utils/place-mapper';
+import { SearchFilters as SearchFiltersType } from '@/components/features/search/search-filters';
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { useSearchPlaces } = usePlaces();
 
   // State
@@ -68,8 +73,8 @@ function SearchPageContent() {
   // Search query
   const { data: searchResponse, isLoading, error, refetch } = useSearchPlaces(searchRequest);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
     setCurrentPage(1); // Reset to first page
     refetch();
   };
@@ -84,67 +89,88 @@ function SearchPageContent() {
   const totalPages = searchResponse?.success && searchResponse.data ? searchResponse.data.totalPages : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Search Restaurants</h1>
-        
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex gap-4 mb-6">
-          <div className="flex-1 relative">
-            <Input
-              type="text"
+    <div className="min-h-screen bg-[#0f172a]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">Search Restaurants</h1>
+          
+          {/* Search Bar */}
+          <div className="mb-6">
+            <AnimatedSearchBar
               placeholder="Search restaurants, cuisines, or dishes..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              onChange={setSearchQuery}
+              onSearch={handleSearch}
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          </div>
-          <Button type="submit">Search</Button>
-        </form>
-
-        {/* Controls */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <SearchFilters
-              onFiltersChange={handleFiltersChange}
-              initialFilters={filters}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="md:hidden"
-            >
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Filters
-            </Button>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">
-              {totalCount > 0 && `${totalCount} result${totalCount !== 1 ? 's' : ''}`}
-            </span>
-            <div className="border rounded flex">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
+          {/* Controls */}
+          <GlassCard className="p-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center space-x-4">
+                <Button3D
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  Filters
+                </Button3D>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-300">
+                  {totalCount > 0 && `${totalCount} result${totalCount !== 1 ? 's' : ''}`}
+                </span>
+                <div className="flex items-center gap-1 glass-card p-1 rounded-lg">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'grid'
+                        ? 'bg-indigo-500 text-white'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <Grid className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded transition-colors ${
+                      viewMode === 'list'
+                        ? 'bg-indigo-500 text-white'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          </GlassCard>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div className="mb-6">
+              <FilterPanel
+                filters={[
+                  {
+                    title: 'Cuisine Types',
+                    options: [
+                      { label: 'Middle Eastern', value: 'middle-eastern' },
+                      { label: 'Asian', value: 'asian' },
+                    ],
+                    selected: filters.cuisineTypes || [],
+                    onSelectionChange: (values) => {
+                      handleFiltersChange({ ...filters, cuisineTypes: values });
+                    },
+                  },
+                ]}
+                onClose={() => setShowFilters(false)}
+                onApply={() => setShowFilters(false)}
+              />
+            </div>
+          )}
         </div>
-      </div>
 
       {/* Results */}
       <div className="space-y-6">
@@ -155,16 +181,7 @@ function SearchPageContent() {
               : 'grid-cols-1'
           }`}>
             {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-0">
-                  <div className="h-48 bg-gray-200 animate-pulse rounded-t-lg"></div>
-                  <div className="p-4 space-y-3">
-                    <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
-                    <div className="h-4 bg-gray-200 animate-pulse rounded w-2/3"></div>
-                  </div>
-                </CardContent>
-              </Card>
+              <PlaceCardSkeleton key={i} />
             ))}
           </div>
         ) : error ? (
@@ -200,15 +217,21 @@ function SearchPageContent() {
         ) : (
           <>
             {/* Results Grid */}
-            <div className={`grid gap-6 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'grid-cols-1 max-w-4xl'
-            }`}>
+            <StaggerChildren
+              className={`grid gap-6 ${
+                viewMode === 'grid'
+                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                  : 'grid-cols-1 max-w-4xl'
+              }`}
+            >
               {places.map((place) => (
-                <PlaceCard key={place.id} place={place} />
+                <PlaceCard3D
+                  key={place.id}
+                  place={mapPlaceToCard3D(place)}
+                  onClick={() => router.push(`/places/${place.id}`)}
+                />
               ))}
-            </div>
+            </StaggerChildren>
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -224,12 +247,17 @@ function SearchPageContent() {
         )}
       </div>
     </div>
+    </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-8"><LoadingSpinner /></div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0f172a] flex justify-center items-center py-8">
+        <LoadingSpinner />
+      </div>
+    }>
       <SearchPageContent />
     </Suspense>
   );
