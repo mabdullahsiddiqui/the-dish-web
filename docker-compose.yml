@@ -1,0 +1,114 @@
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: the-dish-postgres
+    environment:
+      POSTGRES_USER: thedish
+      POSTGRES_PASSWORD: thedish_dev_password
+      POSTGRES_DB: thedish
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U thedish"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - the-dish-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: the-dish-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - the-dish-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: the-dish-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - the-dish-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: the-dish-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: thedish
+      RABBITMQ_DEFAULT_PASS: thedish_dev_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - the-dish-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: the-dish-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@thedish.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - the-dish-network
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: the-dish-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - the-dish-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+  rabbitmq_data:
+  pgadmin_data:
+
+networks:
+  the-dish-network:
+    driver: bridge
+
+
