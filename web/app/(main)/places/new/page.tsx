@@ -7,10 +7,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { usePlaces } from '@/hooks/usePlaces';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
+import { Button3D } from '@/components/ui/Button3D';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard } from '@/components/cards/GlassCard';
+import { FadeInUp } from '@/components/animations/FadeInUp';
 import { MapPin, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -120,191 +121,197 @@ export default function CreatePlacePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6">
-        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Link>
+    <div className="min-h-screen bg-[#0f172a]">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <FadeInUp>
+          <div className="mb-6">
+            <Link href="/" className="inline-flex items-center text-gray-300 hover:text-white transition-colors">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Link>
+          </div>
+        </FadeInUp>
+
+        <FadeInUp delay={0.1}>
+          <GlassCard className="p-6">
+            <h1 className="text-2xl font-bold text-white mb-2">Add a New Restaurant</h1>
+            <p className="text-gray-300 mb-6">
+              Help others discover great places by adding a restaurant to The Dish.
+            </p>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Name */}
+              <div>
+                <Label htmlFor="name" className="text-gray-200">Restaurant Name *</Label>
+                <Input
+                  id="name"
+                  {...register('name')}
+                  placeholder="e.g., Joe's Pizza"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-400 mt-1">{errors.name.message}</p>
+                )}
+              </div>
+
+              {/* Address */}
+              <div>
+                <Label htmlFor="address" className="text-gray-200">Address *</Label>
+                <Input
+                  id="address"
+                  {...register('address')}
+                  placeholder="e.g., 123 Main St, New York, NY 10001"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                />
+                {errors.address && (
+                  <p className="text-sm text-red-400 mt-1">{errors.address.message}</p>
+                )}
+              </div>
+
+              {/* Location */}
+              <div>
+                <Label className="text-gray-200">Location Coordinates *</Label>
+                <div className="grid grid-cols-2 gap-4 mt-1">
+                  <div>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      {...register('latitude', { valueAsNumber: true })}
+                      placeholder="Latitude (e.g., 40.7128)"
+                      className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                    />
+                    {errors.latitude && (
+                      <p className="text-sm text-red-400 mt-1">{errors.latitude.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      {...register('longitude', { valueAsNumber: true })}
+                      placeholder="Longitude (e.g., -74.0060)"
+                      className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                    />
+                    {errors.longitude && (
+                      <p className="text-sm text-red-400 mt-1">{errors.longitude.message}</p>
+                    )}
+                  </div>
+                </div>
+                <Button3D
+                  type="button"
+                  variant="outline"
+                  onClick={getCurrentLocation}
+                  disabled={locationLoading}
+                  size="sm"
+                  className="mt-2"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  {locationLoading ? 'Detecting...' : 'Use My Current Location'}
+                </Button3D>
+              </div>
+
+              {/* Contact Info */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="phone" className="text-gray-200">Phone</Label>
+                  <Input
+                    id="phone"
+                    {...register('phone')}
+                    placeholder="(555) 123-4567"
+                    className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="website" className="text-gray-200">Website</Label>
+                  <Input
+                    id="website"
+                    {...register('website')}
+                    placeholder="https://example.com"
+                    className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                  />
+                  {errors.website && (
+                    <p className="text-sm text-red-400 mt-1">{errors.website.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-gray-200">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register('email')}
+                    placeholder="info@example.com"
+                    className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-400 mt-1">{errors.email.message}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <Label htmlFor="priceRange" className="text-gray-200">Price Range *</Label>
+                <select
+                  id="priceRange"
+                  {...register('priceRange', { valueAsNumber: true })}
+                  className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-md mt-1 text-white"
+                >
+                  <option value={1}>$ - Budget Friendly</option>
+                  <option value={2}>$$ - Moderate</option>
+                  <option value={3}>$$$ - Expensive</option>
+                  <option value={4}>$$$$ - Very Expensive</option>
+                </select>
+              </div>
+
+              {/* Cuisine Types */}
+              <div>
+                <Label htmlFor="cuisineTypes" className="text-gray-200">Cuisine Types * (comma-separated)</Label>
+                <Input
+                  id="cuisineTypes"
+                  {...register('cuisineTypes')}
+                  placeholder="e.g., Italian, Pizza, Mediterranean"
+                  className="mt-1 bg-gray-800/50 border-gray-700 text-white placeholder-gray-400"
+                />
+                <p className="text-sm text-gray-400 mt-1">
+                  Separate multiple cuisines with commas
+                </p>
+                {errors.cuisineTypes && (
+                  <p className="text-sm text-red-400 mt-1">{errors.cuisineTypes.message}</p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <div className="flex gap-4 pt-4">
+                <Button3D
+                  type="submit"
+                  variant="primary"
+                  disabled={createPlaceMutation.isPending}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {createPlaceMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Restaurant'
+                  )}
+                </Button3D>
+                <Button3D
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  size="lg"
+                >
+                  Cancel
+                </Button3D>
+              </div>
+            </form>
+          </GlassCard>
+        </FadeInUp>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Add a New Restaurant</CardTitle>
-          <p className="text-gray-600 mt-2">
-            Help others discover great places by adding a restaurant to The Dish.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Name */}
-            <div>
-              <Label htmlFor="name">Restaurant Name *</Label>
-              <Input
-                id="name"
-                {...register('name')}
-                placeholder="e.g., Joe's Pizza"
-                className="mt-1"
-              />
-              {errors.name && (
-                <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
-              )}
-            </div>
-
-            {/* Address */}
-            <div>
-              <Label htmlFor="address">Address *</Label>
-              <Input
-                id="address"
-                {...register('address')}
-                placeholder="e.g., 123 Main St, New York, NY 10001"
-                className="mt-1"
-              />
-              {errors.address && (
-                <p className="text-sm text-red-600 mt-1">{errors.address.message}</p>
-              )}
-            </div>
-
-            {/* Location */}
-            <div>
-              <Label>Location Coordinates *</Label>
-              <div className="grid grid-cols-2 gap-4 mt-1">
-                <div>
-                  <Input
-                    id="latitude"
-                    type="number"
-                    step="any"
-                    {...register('latitude', { valueAsNumber: true })}
-                    placeholder="Latitude (e.g., 40.7128)"
-                  />
-                  {errors.latitude && (
-                    <p className="text-sm text-red-600 mt-1">{errors.latitude.message}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    id="longitude"
-                    type="number"
-                    step="any"
-                    {...register('longitude', { valueAsNumber: true })}
-                    placeholder="Longitude (e.g., -74.0060)"
-                  />
-                  {errors.longitude && (
-                    <p className="text-sm text-red-600 mt-1">{errors.longitude.message}</p>
-                  )}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={getCurrentLocation}
-                disabled={locationLoading}
-                className="mt-2"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                {locationLoading ? 'Detecting...' : 'Use My Current Location'}
-              </Button>
-            </div>
-
-            {/* Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  {...register('phone')}
-                  placeholder="(555) 123-4567"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  {...register('website')}
-                  placeholder="https://example.com"
-                  className="mt-1"
-                />
-                {errors.website && (
-                  <p className="text-sm text-red-600 mt-1">{errors.website.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register('email')}
-                  placeholder="info@example.com"
-                  className="mt-1"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <Label htmlFor="priceRange">Price Range *</Label>
-              <select
-                id="priceRange"
-                {...register('priceRange', { valueAsNumber: true })}
-                className="w-full px-3 py-2 border rounded-md mt-1"
-              >
-                <option value={1}>$ - Budget Friendly</option>
-                <option value={2}>$$ - Moderate</option>
-                <option value={3}>$$$ - Expensive</option>
-                <option value={4}>$$$$ - Very Expensive</option>
-              </select>
-            </div>
-
-            {/* Cuisine Types */}
-            <div>
-              <Label htmlFor="cuisineTypes">Cuisine Types * (comma-separated)</Label>
-              <Input
-                id="cuisineTypes"
-                {...register('cuisineTypes')}
-                placeholder="e.g., Italian, Pizza, Mediterranean"
-                className="mt-1"
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Separate multiple cuisines with commas
-              </p>
-              {errors.cuisineTypes && (
-                <p className="text-sm text-red-600 mt-1">{errors.cuisineTypes.message}</p>
-              )}
-            </div>
-
-            {/* Submit */}
-            <div className="flex gap-4 pt-4">
-              <Button
-                type="submit"
-                disabled={createPlaceMutation.isPending}
-                className="flex-1"
-                size="lg"
-              >
-                {createPlaceMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create Restaurant'
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                size="lg"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   );
 }
