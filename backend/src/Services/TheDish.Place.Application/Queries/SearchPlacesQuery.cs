@@ -27,3 +27,4 @@ public class SearchPlacesQuery : IRequest<Response<SearchPlacesResponseDto>>
 
 
 
+

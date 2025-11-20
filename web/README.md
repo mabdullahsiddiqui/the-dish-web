@@ -33,10 +33,10 @@ npm install
    - Or create `.env.local` manually with:
    ```
    NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
-   NEXT_PUBLIC_APP_NAME="The Dish"
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_DEBUG=false
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
+   NEXT_PUBLIC_FACEBOOK_APP_ID=your-facebook-app-id-here
    ```
+   - See `SOCIAL_LOGIN_SETUP.md` for detailed OAuth configuration instructions
 
 3. **Start backend services** (required):
    ```bash

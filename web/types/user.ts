@@ -3,6 +3,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  externalProvider?: 'Email' | 'Google' | 'Facebook';
   joinDate: string;
   reputation: number;
   reviewCount: number;
@@ -10,8 +11,12 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  success: boolean;
+  data?: {
+    token: string;
+    user: User;
+  };
+  message?: string;
 }
 
 export interface LoginRequest {
@@ -24,5 +29,15 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
 }
 

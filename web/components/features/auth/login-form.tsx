@@ -9,6 +9,7 @@ import { Button3D } from '@/components/ui/Button3D';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { GlassCard } from '@/components/cards/GlassCard';
+import { SocialLoginButtons } from '@/components/features/auth/SocialLoginButtons';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginRequest } from '@/types/user';
 import { Eye, EyeOff } from 'lucide-react';
@@ -56,6 +57,17 @@ export function LoginForm() {
           </p>
         </div>
 
+        <SocialLoginButtons />
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-700"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-transparent text-gray-400">OR</span>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-gray-200">Email</Label>
@@ -72,7 +84,12 @@ export function LoginForm() {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-200">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-gray-200">Password</Label>
+              <Link href="/forgot-password" className="text-sm text-indigo-400 hover:text-indigo-300 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <Input
                 id="password"

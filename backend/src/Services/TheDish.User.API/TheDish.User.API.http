@@ -1,0 +1,6 @@
+@TheDish.User.API_HostAddress = http://localhost:5010
+
+GET {{TheDish.User.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
