@@ -14,11 +14,16 @@
     <PackageReference Include="NetTopologySuite" Version="2.5.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Services\TheDish.Place.Infrastructure\TheDish.Place.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Services\TheDish.Place.Domain\TheDish.Place.Domain.csproj" />
+    <ProjectReference Include="..\..\Services\TheDish.User.Infrastructure\TheDish.User.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\TheDish.User.Domain\TheDish.User.Domain.csproj" />
+    <ProjectReference Include="..\..\Services\TheDish.Review.Infrastructure\TheDish.Review.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\TheDish.Review.Domain\TheDish.Review.Domain.csproj" />
   </ItemGroup>
 
 </Project>

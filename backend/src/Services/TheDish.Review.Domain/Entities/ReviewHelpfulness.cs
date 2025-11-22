@@ -7,7 +7,6 @@ public class ReviewHelpfulness : BaseEntity
     public Guid ReviewId { get; private set; }
     public Guid UserId { get; private set; }
     public bool IsHelpful { get; private set; }
-    public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     
     // Navigation property
     public virtual Review Review { get; private set; } = null!;
@@ -24,7 +23,6 @@ public class ReviewHelpfulness : BaseEntity
         ReviewId = reviewId;
         UserId = userId;
         IsHelpful = isHelpful;
-        CreatedAt = DateTime.UtcNow;
     }
 
     public void UpdateVote(bool isHelpful)

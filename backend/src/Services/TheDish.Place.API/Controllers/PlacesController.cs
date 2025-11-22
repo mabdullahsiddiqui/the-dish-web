@@ -188,6 +188,28 @@ public class PlacesController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPut("{id}/rating")]
+    public async Task<ActionResult<Response<PlaceDto>>> UpdatePlaceRating(
+        Guid id,
+        [FromBody] UpdatePlaceRatingDto dto)
+    {
+        var command = new UpdatePlaceRatingCommand
+        {
+            PlaceId = id,
+            AverageRating = dto.AverageRating,
+            ReviewCount = dto.ReviewCount
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
 }
 
 

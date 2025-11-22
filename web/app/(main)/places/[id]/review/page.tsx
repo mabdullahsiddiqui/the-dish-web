@@ -150,6 +150,16 @@ export default function ReviewPage() {
   const onSubmit = async (data: ReviewFormData) => {
     if (!placeResponse?.success || !placeResponse.data) return;
 
+    // Verify token exists before submitting
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        toast.error('Your session has expired. Please log in again.');
+        router.push(`/login?redirect=/places/${id}/review`);
+        return;
+      }
+    }
+
     try {
       // Create the review first
       const reviewResponse = await createReviewMutation.mutateAsync({

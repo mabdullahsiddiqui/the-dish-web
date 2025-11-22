@@ -93,6 +93,18 @@ public class User : AggregateRoot
         Reputation = Math.Max(0, Reputation + points);
     }
 
+    public ReputationLevel GetReputationLevel()
+    {
+        return Reputation switch
+        {
+            >= 500 => ReputationLevel.Diamond,
+            >= 300 => ReputationLevel.Platinum,
+            >= 150 => ReputationLevel.Gold,
+            >= 50 => ReputationLevel.Silver,
+            _ => ReputationLevel.Bronze
+        };
+    }
+
     public void SetPasswordResetCode(string code, DateTime expiry)
     {
         PasswordResetCode = code;

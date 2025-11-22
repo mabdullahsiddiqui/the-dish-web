@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TheDish.Common.Application.Common;
 using TheDish.Review.Application.Commands;
 using TheDish.Review.Application.DTOs;
@@ -102,10 +104,24 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<Response<ReviewDto>>> CreateReview([FromBody] CreateReviewDto dto)
     {
-        // TODO: Extract user ID from JWT token
-        var userId = Guid.NewGuid(); // Placeholder
+        // Log authentication details for debugging
+        _logger.LogInformation("CreateReview called. User authenticated: {IsAuthenticated}, Identity name: {IdentityName}", 
+            User.Identity?.IsAuthenticated, User.Identity?.Name);
+        
+        // Extract user ID from JWT token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _logger.LogInformation("User ID claim value: {UserIdClaim}", userIdClaim ?? "null");
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            _logger.LogWarning("Failed to extract user ID from token. Claim value: {ClaimValue}", userIdClaim);
+            return Unauthorized(Response<ReviewDto>.FailureResult("Invalid user authentication"));
+        }
+        
+        _logger.LogInformation("Creating review for user: {UserId}, place: {PlaceId}", userId, dto.PlaceId);
 
         var command = new CreateReviewCommand
         {
@@ -131,12 +147,17 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<Response<ReviewDto>>> UpdateReview(
         Guid id,
         [FromBody] UpdateReviewDto dto)
     {
-        // TODO: Extract user ID from JWT token
-        var userId = Guid.NewGuid(); // Placeholder
+        // Extract user ID from JWT token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(Response<ReviewDto>.FailureResult("Invalid user authentication"));
+        }
 
         var command = new UpdateReviewCommand
         {
@@ -158,10 +179,15 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<ActionResult<Response<bool>>> DeleteReview(Guid id)
     {
-        // TODO: Extract user ID from JWT token
-        var userId = Guid.NewGuid(); // Placeholder
+        // Extract user ID from JWT token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(Response<bool>.FailureResult("Invalid user authentication"));
+        }
 
         var command = new DeleteReviewCommand
         {
@@ -180,12 +206,17 @@ public class ReviewsController : ControllerBase
     }
 
     [HttpPost("{id}/helpful")]
+    [Authorize]
     public async Task<ActionResult<Response<ReviewDto>>> MarkReviewHelpful(
         Guid id,
         [FromBody] bool isHelpful)
     {
-        // TODO: Extract user ID from JWT token
-        var userId = Guid.NewGuid(); // Placeholder
+        // Extract user ID from JWT token
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(Response<ReviewDto>.FailureResult("Invalid user authentication"));
+        }
 
         var command = new MarkReviewHelpfulCommand
         {

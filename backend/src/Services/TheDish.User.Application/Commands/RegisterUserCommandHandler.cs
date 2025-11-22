@@ -81,6 +81,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
             LastName = user.LastName,
             ExternalProvider = user.ExternalProvider.ToString(),
             Reputation = user.Reputation,
+            ReputationLevel = user.GetReputationLevel().ToString(),
             ReviewCount = user.ReviewCount,
             IsVerified = user.IsVerified,
             JoinDate = user.JoinDate

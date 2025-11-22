@@ -1,3 +1,5 @@
+export type ReputationLevel = 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
+
 export interface User {
   id: string;
   email: string;
@@ -6,6 +8,7 @@ export interface User {
   externalProvider?: 'Email' | 'Google' | 'Facebook';
   joinDate: string;
   reputation: number;
+  reputationLevel: ReputationLevel;
   reviewCount: number;
   isVerified: boolean;
 }

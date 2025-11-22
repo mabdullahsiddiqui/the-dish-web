@@ -30,6 +30,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGpsVerificationService, GpsVerificationService>();
         services.AddScoped<IPhotoService, PhotoService>();
 
+        // HTTP Client for inter-service communication
+        services.AddHttpClient();
+
         // AWS S3
         var awsOptions = configuration.GetAWSOptions();
         services.AddDefaultAWSOptions(awsOptions);

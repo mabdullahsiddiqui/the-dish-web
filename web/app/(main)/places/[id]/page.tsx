@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useMemo } from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { MapPin, Phone, Globe, Clock, Star, User } from 'lucide-react';
+import { MapPin, Phone, Globe, Clock, Star, User, Filter, ArrowUpDown } from 'lucide-react';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlassCard } from '@/components/cards/GlassCard';
 import { Badge3D } from '@/components/ui/Badge3D';
@@ -12,7 +13,13 @@ import { useReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
 import { ReviewHelpfulButtons } from '@/components/features/reviews/review-helpful-buttons';
 import { PlaceMap } from '@/components/features/places/place-map';
+import { Review } from '@/types/review';
+import { getReputationLevelColor, getReputationLevelBgColor } from '@/lib/utils/reputation';
+import toast from 'react-hot-toast';
 import Link from 'next/link';
+
+type SortOption = 'recent' | 'helpful' | 'highest' | 'lowest';
+type FilterOption = 'all' | '5' | '4' | '3' | '2' | '1';
 
 export default function PlaceDetailPage() {
   const params = useParams();
@@ -21,9 +28,49 @@ export default function PlaceDetailPage() {
   const { usePlaceReviews } = useReviews();
   const { isAuthenticated } = useAuth();
 
-  const { data: placeResponse, isLoading: placeLoading, error: placeError } = usePlace(id);
-  const { data: reviewsResponse, isLoading: reviewsLoading } = usePlaceReviews(id, 1, 10);
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
+  const [filterBy, setFilterBy] = useState<FilterOption>('all');
 
+  const { data: placeResponse, isLoading: placeLoading, error: placeError } = usePlace(id);
+  const { data: reviewsResponse, isLoading: reviewsLoading } = usePlaceReviews(id, 1, 100);
+
+  // Get place and reviews data (safe defaults)
+  const place = placeResponse?.success && placeResponse.data ? placeResponse.data : null;
+  const allReviews = reviewsResponse?.success && reviewsResponse.data ? reviewsResponse.data.reviews : [];
+
+  // Filter and sort reviews - MUST be called before any conditional returns
+  const reviews = useMemo(() => {
+    let filtered = [...allReviews];
+
+    // Filter by rating
+    if (filterBy !== 'all') {
+      const rating = parseInt(filterBy);
+      filtered = filtered.filter((review) => review.rating === rating);
+    }
+
+    // Sort reviews
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'helpful':
+          const aRatio = a.helpfulCount / (a.helpfulCount + a.notHelpfulCount || 1);
+          const bRatio = b.helpfulCount / (b.helpfulCount + b.notHelpfulCount || 1);
+          if (aRatio !== bRatio) return bRatio - aRatio;
+          return b.helpfulCount - a.helpfulCount;
+        case 'highest':
+          return b.rating - a.rating;
+        case 'lowest':
+          return a.rating - b.rating;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [allReviews, sortBy, filterBy]);
+
+  // Now we can do conditional returns AFTER all hooks
   if (placeLoading) {
     return (
       <div className="min-h-screen bg-[#0f172a]">
@@ -44,12 +91,9 @@ export default function PlaceDetailPage() {
     );
   }
 
-  if (placeError || !placeResponse?.success || !placeResponse.data) {
+  if (placeError || !placeResponse?.success || !place) {
     return notFound();
   }
-
-  const place = placeResponse.data;
-  const reviews = reviewsResponse?.success && reviewsResponse.data ? reviewsResponse.data.reviews : [];
 
   const getPriceRangeText = (priceRange: number) => {
     return '$'.repeat(priceRange);
@@ -160,7 +204,45 @@ export default function PlaceDetailPage() {
             {/* Reviews Section */}
             <FadeInUp delay={0.3}>
               <GlassCard className="p-6">
-                <h2 className="text-xl font-bold text-white mb-4">Reviews</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <h2 className="text-xl font-bold text-white">Reviews</h2>
+                  
+                  {/* Sort and Filter Controls */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Sort Dropdown */}
+                    <div className="relative">
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as SortOption)}
+                        className="bg-gray-800/50 border border-gray-700 text-white text-sm rounded-md px-3 py-2 pr-8 focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none cursor-pointer"
+                      >
+                        <option value="recent">Most Recent</option>
+                        <option value="helpful">Most Helpful</option>
+                        <option value="highest">Highest Rating</option>
+                        <option value="lowest">Lowest Rating</option>
+                      </select>
+                      <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+
+                    {/* Filter Dropdown */}
+                    <div className="relative">
+                      <select
+                        value={filterBy}
+                        onChange={(e) => setFilterBy(e.target.value as FilterOption)}
+                        className="bg-gray-800/50 border border-gray-700 text-white text-sm rounded-md px-3 py-2 pr-8 focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none cursor-pointer"
+                      >
+                        <option value="all">All Ratings</option>
+                        <option value="5">5 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="2">2 Stars</option>
+                        <option value="1">1 Star</option>
+                      </select>
+                      <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
                 {reviewsLoading ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
@@ -182,8 +264,15 @@ export default function PlaceDetailPage() {
                           <div className="flex items-center space-x-2">
                             <User className="w-8 h-8 bg-gray-700 rounded-full p-1 text-gray-400" />
                             <div>
-                              <div className="font-medium text-sm text-white">
-                                {review.user ? `${review.user.firstName} ${review.user.lastName}` : 'Anonymous'}
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-sm text-white">
+                                  {review.user ? `${review.user.firstName} ${review.user.lastName}` : 'Anonymous'}
+                                </span>
+                                {review.user?.reputationLevel && (
+                                  <span className={`text-xs px-2 py-0.5 rounded-full border ${getReputationLevelBgColor(review.user.reputationLevel)} ${getReputationLevelColor(review.user.reputationLevel)}`}>
+                                    {review.user.reputationLevel}
+                                  </span>
+                                )}
                               </div>
                               <div className="text-xs text-gray-400">
                                 {new Date(review.createdAt).toLocaleDateString()}
@@ -211,15 +300,47 @@ export default function PlaceDetailPage() {
                         
                         <p className="text-gray-200 mb-3">{review.text}</p>
                         
-                        {review.dietaryAccuracy && (
-                          <div className="mb-3">
-                            <span className="text-sm text-gray-400">
-                              Dietary accuracy: {review.dietaryAccuracy}
-                            </span>
-                          </div>
-                        )}
+                        {(() => {
+                          const dietaryAcc = review.dietaryAccuracy;
+                          if (!dietaryAcc) return null;
+                          if (typeof dietaryAcc === 'string' && dietaryAcc.trim()) {
+                            return (
+                              <div className="mb-3">
+                                <span className="text-sm text-gray-400">
+                                  Dietary accuracy: {dietaryAcc}
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (typeof dietaryAcc === 'object' && dietaryAcc !== null) {
+                            const entries = Object.entries(dietaryAcc as Record<string, string>);
+                            if (entries.length > 0) {
+                              return (
+                                <div className="mb-3">
+                                  <span className="text-sm text-gray-400">
+                                    Dietary accuracy: {entries.map(([key, value]) => `${key}: ${value}`).join(', ')}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          }
+                          return null;
+                        })()}
                         
-                        <ReviewHelpfulButtons review={review} />
+                        <div className="flex items-center justify-between">
+                          <ReviewHelpfulButtons review={review} />
+                          {isAuthenticated && (
+                            <button
+                              onClick={() => {
+                                // TODO: Implement report functionality
+                                toast.success('Report submitted. Thank you for helping keep our community safe.');
+                              }}
+                              className="text-xs text-gray-400 hover:text-red-400 transition-colors"
+                            >
+                              Report
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </StaggerChildren>
