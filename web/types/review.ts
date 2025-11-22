@@ -18,6 +18,8 @@ export interface Review {
     lastName: string;
     reviewCount: number;
     isVerified: boolean;
+    reputation?: number;
+    reputationLevel?: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
   };
 }
 

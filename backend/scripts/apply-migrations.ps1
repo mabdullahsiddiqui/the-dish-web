@@ -38,3 +38,4 @@ Write-Host "`nAll migrations applied successfully!" -ForegroundColor Green
 
 
 
+

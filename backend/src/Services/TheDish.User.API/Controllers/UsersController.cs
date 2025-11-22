@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TheDish.Common.Application.Common;
 using TheDish.User.Application.Commands;
 using TheDish.User.Application.DTOs;
+using TheDish.User.Application.Queries;
 
 namespace TheDish.User.API.Controllers;
 
@@ -130,5 +131,49 @@ public class UsersController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Response<UserDto>>> GetUser(Guid id)
+    {
+        var query = new GetUserByIdQuery
+        {
+            UserId = id
+        };
+
+        var result = await _mediator.Send(query);
+
+        if (!result.Success)
+        {
+            return NotFound(result);
+        }
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/reputation")]
+    public async Task<ActionResult<Response<bool>>> UpdateReputation(
+        Guid id,
+        [FromBody] UpdateReputationRequest request)
+    {
+        var command = new UpdateReputationCommand
+        {
+            UserId = id,
+            Points = request.Points
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+}
+
+public class UpdateReputationRequest
+{
+    public int Points { get; set; }
 }
 

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Star, Utensils } from 'lucide-react';
+import { MapPin, Star, Utensils, TrendingUp, Navigation } from 'lucide-react';
 import { HeroWith3D } from '@/components/3d/HeroWith3D';
 import { AnimatedSearchBar } from '@/components/search/AnimatedSearchBar';
 import { TiltCard } from '@/components/cards/TiltCard';
@@ -12,16 +12,66 @@ import { Badge3D } from '@/components/ui/Badge3D';
 import { AnimatedIcon } from '@/components/ui/AnimatedIcon';
 import { FadeInUp } from '@/components/animations/FadeInUp';
 import { StaggerChildren } from '@/components/animations/StaggerChildren';
+import { PlaceCard3D } from '@/components/cards/PlaceCard3D';
+import { usePlaces } from '@/hooks/usePlaces';
+import { useReviews } from '@/hooks/useReviews';
+import { useAuth } from '@/hooks/useAuth';
+import { mapPlaceToCard3D } from '@/lib/utils/place-mapper';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { PlaceCardSkeleton } from '@/components/ui/PlaceCardSkeleton';
+import Link from 'next/link';
 
 function HomePageContent() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const router = useRouter();
-  
+  const { useSearchPlaces, useNearbyPlaces } = usePlaces();
+  const { useRecentReviews } = useReviews();
+  const { isAuthenticated } = useAuth();
+
+  // Get user location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        () => {
+          // Location access denied or unavailable
+        }
+      );
+    }
+  }, []);
+
+  // Fetch trending places (highly rated with many reviews)
+  const { data: trendingResponse, isLoading: trendingLoading } = useSearchPlaces({
+    minRating: 4.0,
+    page: 1,
+    pageSize: 6,
+  });
+
+  // Fetch nearby places if location available
+  const { data: nearbyResponse, isLoading: nearbyLoading } = useNearbyPlaces({
+    latitude: userLocation?.latitude || 0,
+    longitude: userLocation?.longitude || 0,
+    radiusKm: 5,
+  });
+
+  // Fetch recent reviews
+  const { data: recentReviewsResponse, isLoading: reviewsLoading } = useRecentReviews(1, 6);
+
   const handleSearch = (value: string) => {
     if (value.trim()) {
       router.push(`/search?q=${encodeURIComponent(value.trim())}`);
     }
   };
+
+  const trendingPlaces = trendingResponse?.success && trendingResponse.data ? trendingResponse.data.places : [];
+  const nearbyPlaces = nearbyResponse?.success && nearbyResponse.data ? nearbyResponse.data : [];
+  const recentReviews = recentReviewsResponse?.success && recentReviewsResponse.data ? recentReviewsResponse.data.reviews : [];
 
   return (
     <div className="min-h-screen bg-[#0f172a]">
@@ -100,8 +150,92 @@ function HomePageContent() {
         </div>
       </section>
 
+      {/* Trending Places Section */}
+      {trendingPlaces.length > 0 && (
+        <section className="py-16 bg-[#1e293b]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <FadeInUp>
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center space-x-2">
+                    <TrendingUp className="w-8 h-8 text-indigo-400" />
+                    <span>Trending Places</span>
+                  </h2>
+                  <p className="text-xl text-gray-300">
+                    Highly rated restaurants loved by our community
+                  </p>
+                </div>
+                <Button3D variant="outline" onClick={() => router.push('/places')}>
+                  View All
+                </Button3D>
+              </div>
+            </FadeInUp>
+
+            {trendingLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <PlaceCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {trendingPlaces.slice(0, 6).map((place) => (
+                  <PlaceCard3D
+                    key={place.id}
+                    place={mapPlaceToCard3D(place)}
+                    onClick={() => router.push(`/places/${place.id}`)}
+                  />
+                ))}
+              </StaggerChildren>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Nearby Places Section */}
+      {userLocation && nearbyPlaces.length > 0 && (
+        <section className="py-16 bg-[#0f172a]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <FadeInUp>
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 flex items-center space-x-2">
+                    <Navigation className="w-8 h-8 text-green-400" />
+                    <span>Nearby Places</span>
+                  </h2>
+                  <p className="text-xl text-gray-300">
+                    Great restaurants close to you
+                  </p>
+                </div>
+                <Button3D variant="outline" onClick={() => router.push('/places')}>
+                  View All
+                </Button3D>
+              </div>
+            </FadeInUp>
+
+            {nearbyLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <PlaceCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {nearbyPlaces.slice(0, 6).map((place) => (
+                  <PlaceCard3D
+                    key={place.id}
+                    place={mapPlaceToCard3D(place)}
+                    onClick={() => router.push(`/places/${place.id}`)}
+                  />
+                ))}
+              </StaggerChildren>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Recent Reviews Section */}
-      <section className="py-16 bg-[#1e293b]">
+      <section className={`py-16 ${userLocation && nearbyPlaces.length > 0 ? 'bg-[#1e293b]' : 'bg-[#1e293b]'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeInUp>
             <div className="text-center mb-12">
@@ -114,87 +248,75 @@ function HomePageContent() {
             </div>
           </FadeInUp>
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Sample review cards - these would come from actual API data */}
-            <TiltCard>
-              <GlassCard hover className="p-6 h-full">
-                <div className="flex items-center mb-3">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <span className="ml-2 text-sm text-gray-400">2 hours ago</span>
+          {reviewsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-32 bg-gray-700 rounded"></div>
                 </div>
-                <p className="text-gray-200 mb-3">
-                  "Amazing halal options and the service was excellent. The lamb biryani was perfectly spiced!"
-                </p>
-                <div className="text-sm text-gray-400 mb-3">
-                  <span className="font-medium text-white">Sarah M.</span> reviewed{' '}
-                  <span className="font-medium text-white">Spice Garden</span>
-                </div>
-                <div className="mt-2">
-                  <Badge3D variant="halal" />
-                </div>
-              </GlassCard>
-            </TiltCard>
-
-            <TiltCard>
-              <GlassCard hover className="p-6 h-full">
-                <div className="flex items-center mb-3">
-                  <div className="flex">
-                    {[...Array(4)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                    ))}
-                    <Star className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <span className="ml-2 text-sm text-gray-400">5 hours ago</span>
-                </div>
-                <p className="text-gray-200 mb-3">
-                  "Great vegan options! The mushroom risotto was creamy and flavorful. Will definitely come back."
-                </p>
-                <div className="text-sm text-gray-400 mb-3">
-                  <span className="font-medium text-white">Alex K.</span> reviewed{' '}
-                  <span className="font-medium text-white">Green Kitchen</span>
-                </div>
-                <div className="mt-2">
-                  <Badge3D variant="custom">
-                    <span>Vegan</span>
-                  </Badge3D>
-                </div>
-              </GlassCard>
-            </TiltCard>
-
-            <TiltCard>
-              <GlassCard hover className="p-6 h-full">
-                <div className="flex items-center mb-3">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <span className="ml-2 text-sm text-gray-400">1 day ago</span>
-                </div>
-                <p className="text-gray-200 mb-3">
-                  "Best Korean BBQ in the city! Authentic flavors and great atmosphere. The kimchi was perfect."
-                </p>
-                <div className="text-sm text-gray-400 mb-3">
-                  <span className="font-medium text-white">Mike L.</span> reviewed{' '}
-                  <span className="font-medium text-white">Seoul Kitchen</span>
-                </div>
-                <div className="mt-2">
-                  <Badge3D variant="custom">
-                    <span>Korean</span>
-                  </Badge3D>
-                </div>
-              </GlassCard>
-            </TiltCard>
-          </StaggerChildren>
+              ))}
+            </div>
+          ) : recentReviews.length > 0 ? (
+            <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentReviews.map((review) => (
+                <TiltCard key={review.id}>
+                  <GlassCard hover className="p-6 h-full">
+                    <div className="flex items-center mb-3">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-500'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="ml-2 text-sm text-gray-400">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-gray-200 mb-3 line-clamp-3">
+                      {review.text}
+                    </p>
+                    <div className="text-sm text-gray-400 mb-3">
+                      <span className="font-medium text-white">
+                        {review.user ? `${review.user.firstName} ${review.user.lastName}` : 'Anonymous'}
+                      </span>
+                      {' reviewed '}
+                      <Link
+                        href={`/places/${review.placeId}`}
+                        className="font-medium text-indigo-400 hover:text-indigo-300"
+                      >
+                        Place
+                      </Link>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-2">
+                        {review.isGpsVerified && (
+                          <Badge3D variant="custom" className="text-xs">
+                            GPS Verified
+                          </Badge3D>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {review.helpfulCount} helpful
+                      </div>
+                    </div>
+                  </GlassCard>
+                </TiltCard>
+              ))}
+            </StaggerChildren>
+          ) : (
+            <div className="text-center text-gray-400 py-8">
+              <p>No recent reviews yet</p>
+            </div>
+          )}
 
           <FadeInUp delay={0.4}>
             <div className="text-center mt-8">
               <Button3D variant="outline" onClick={() => router.push('/places')}>
-                View All Reviews
+                View All Places
               </Button3D>
             </div>
           </FadeInUp>

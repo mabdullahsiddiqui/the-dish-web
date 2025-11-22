@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Json;
 using TheDish.Common.Application.Common;
 using TheDish.Review.Application.DTOs;
 using TheDish.Review.Application.Interfaces;
@@ -13,15 +15,21 @@ public class MarkReviewHelpfulCommandHandler : IRequestHandler<MarkReviewHelpful
     private readonly IReviewRepository _reviewRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<MarkReviewHelpfulCommandHandler> _logger;
+    private readonly HttpClient _httpClient;
+    private readonly IConfiguration _configuration;
 
     public MarkReviewHelpfulCommandHandler(
         IReviewRepository reviewRepository,
         IUnitOfWork unitOfWork,
-        ILogger<MarkReviewHelpfulCommandHandler> logger)
+        ILogger<MarkReviewHelpfulCommandHandler> logger,
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration)
     {
         _reviewRepository = reviewRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _httpClient = httpClientFactory.CreateClient();
+        _configuration = configuration;
     }
 
     public async Task<Response<ReviewDto>> Handle(MarkReviewHelpfulCommand request, CancellationToken cancellationToken)
@@ -76,6 +84,40 @@ public class MarkReviewHelpfulCommandHandler : IRequestHandler<MarkReviewHelpful
             await _reviewRepository.UpdateAsync(review, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Update review author's reputation based on helpful votes
+            // +1 point for helpful, -0.5 points for not helpful
+            try
+            {
+                var reputationChange = request.IsHelpful ? 1.0 : -0.5;
+                if (existingVote != null)
+                {
+                    // If changing vote, adjust reputation accordingly
+                    var wasHelpful = existingVote.IsHelpful;
+                    if (wasHelpful && !request.IsHelpful)
+                    {
+                        reputationChange = -1.5; // Remove helpful (+1) and add not helpful (-0.5)
+                    }
+                    else if (!wasHelpful && request.IsHelpful)
+                    {
+                        reputationChange = 1.5; // Remove not helpful (-0.5) and add helpful (+1)
+                    }
+                    else
+                    {
+                        reputationChange = 0; // No change
+                    }
+                }
+
+                if (reputationChange != 0)
+                {
+                    await UpdateUserReputationAsync(review.UserId, reputationChange, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail the review vote if reputation update fails
+                _logger.LogWarning(ex, "Failed to update user reputation for review author: {UserId}", review.UserId);
+            }
+
             var reviewDto = await MapToDtoAsync(review, cancellationToken);
 
             _logger.LogInformation("Review helpfulness updated: {ReviewId} by {UserId}", request.ReviewId, request.UserId);
@@ -125,6 +167,28 @@ public class MarkReviewHelpfulCommandHandler : IRequestHandler<MarkReviewHelpful
             CreatedAt = reviewWithDetails.CreatedAt,
             UpdatedAt = reviewWithDetails.UpdatedAt
         };
+    }
+
+    private async Task UpdateUserReputationAsync(Guid userId, double points, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var userServiceUrl = _configuration["Services:UserService:BaseUrl"] ?? "http://localhost:5001";
+            var updateUrl = $"{userServiceUrl}/api/v1/users/{userId}/reputation";
+
+            var requestBody = new { points = (int)Math.Round(points) };
+            var response = await _httpClient.PostAsJsonAsync(updateUrl, requestBody, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed to update user reputation: {StatusCode}", response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calling User Service to update reputation for user: {UserId}", userId);
+            throw;
+        }
     }
 }
 

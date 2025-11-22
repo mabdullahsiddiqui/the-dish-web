@@ -18,6 +18,17 @@ public class ReviewDto
     public List<ReviewPhotoDto> Photos { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public UserInfoDto? User { get; set; }
+}
+
+public class UserInfoDto
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public int ReviewCount { get; set; }
+    public bool IsVerified { get; set; }
+    public int? Reputation { get; set; }
+    public string? ReputationLevel { get; set; }
 }
 
 

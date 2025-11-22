@@ -19,8 +19,15 @@ apiClient.interceptors.request.use(
     // Get token from localStorage
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('auth_token');
+      console.log('[API Client] Interceptor running for:', config.url);
+      console.log('[API Client] Token exists:', !!token);
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        // Ensure headers object exists and set Authorization header
+        config.headers = config.headers || {};
+        config.headers['Authorization'] = `Bearer ${token}`;
+        console.log('[API Client] Authorization header set:', config.headers['Authorization']?.substring(0, 20) + '...');
+      } else {
+        console.warn('[API Client] No token found in localStorage!');
       }
     }
     return config;

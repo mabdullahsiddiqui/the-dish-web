@@ -12,6 +12,7 @@ import { useReviews } from '@/hooks/useReviews';
 import { ReviewActions } from '@/components/features/reviews/review-actions';
 import { Pagination } from '@/components/ui/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
+import { getReputationLevelColor, getReputationLevelBgColor, getReputationLevelDescription } from '@/lib/utils/reputation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -117,6 +118,16 @@ export default function ProfilePage() {
                       <span className="text-gray-300">Reputation</span>
                       <span className="font-medium text-white">{user.reputation} points</span>
                     </div>
+                    <div className="pt-2 border-t border-gray-700">
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full border ${getReputationLevelBgColor(user.reputationLevel || 'Bronze')}`}>
+                        <span className={`text-sm font-semibold ${getReputationLevelColor(user.reputationLevel || 'Bronze')}`}>
+                          {user.reputationLevel || 'Bronze'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {getReputationLevelDescription(user.reputationLevel || 'Bronze')}
+                      </p>
+                    </div>
                   </div>
 
                   <Button3D variant="outline" className="w-full">
@@ -220,13 +231,32 @@ export default function ProfilePage() {
 
                         <p className="text-gray-200 mb-3">{review.text}</p>
 
-                        {review.dietaryAccuracy && (
-                          <div className="mb-3">
-                            <span className="text-sm text-gray-400">
-                              Dietary accuracy: {review.dietaryAccuracy}
-                            </span>
-                          </div>
-                        )}
+                        {(() => {
+                          const dietaryAcc = review.dietaryAccuracy;
+                          if (!dietaryAcc) return null;
+                          if (typeof dietaryAcc === 'string' && dietaryAcc.trim()) {
+                            return (
+                              <div className="mb-3">
+                                <span className="text-sm text-gray-400">
+                                  Dietary accuracy: {dietaryAcc}
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (typeof dietaryAcc === 'object' && dietaryAcc !== null) {
+                            const entries = Object.entries(dietaryAcc as Record<string, string>);
+                            if (entries.length > 0) {
+                              return (
+                                <div className="mb-3">
+                                  <span className="text-sm text-gray-400">
+                                    Dietary accuracy: {entries.map(([key, value]) => `${key}: ${value}`).join(', ')}
+                                  </span>
+                                </div>
+                              );
+                            }
+                          }
+                          return null;
+                        })()}
 
                         <div className="flex items-center justify-between text-sm">
                           <div className="text-gray-400">
