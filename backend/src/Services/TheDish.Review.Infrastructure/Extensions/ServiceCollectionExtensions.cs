@@ -1,5 +1,6 @@
 using Amazon.S3;
 using Amazon.Extensions.NETCore.Setup;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,23 @@ public static class ServiceCollectionExtensions
         // Services
         services.AddScoped<IGpsVerificationService, GpsVerificationService>();
         services.AddScoped<IPhotoService, PhotoService>();
+        services.AddScoped<IEventPublisher, EventPublisher>();
+        services.AddScoped<IReviewAnalysisService, ReviewAnalysisService>();
+
+        // MassTransit RabbitMQ
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(configuration["RabbitMQ:Host"] ?? "localhost", "/", h =>
+                {
+                    h.Username(configuration["RabbitMQ:Username"] ?? "thedish");
+                    h.Password(configuration["RabbitMQ:Password"] ?? "thedish_dev_password");
+                });
+
+                cfg.ConfigureEndpoints(context);
+            });
+        });
 
         // HTTP Client for inter-service communication
         services.AddHttpClient();

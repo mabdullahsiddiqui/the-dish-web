@@ -1,0 +1,86 @@
+[
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000001",
+    "placeId": "00000000-0000-0000-0000-000000000100",
+    "userId": "00000000-0000-0000-0000-000000000010",
+    "text": "Absolutely delicious food! The pasta was amazing and the service was great. Perfect for a family dinner with kids. Highly recommend!",
+    "rating": 5,
+    "expectedTags": ["delicious", "great-service", "family-friendly"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000002",
+    "placeId": "00000000-0000-0000-0000-000000000100",
+    "userId": "00000000-0000-0000-0000-000000000011",
+    "text": "Wonderful romantic atmosphere, perfect for date night. The food was tasty and the staff was very friendly and attentive.",
+    "rating": 5,
+    "expectedTags": ["romantic", "delicious", "great-service"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000003",
+    "placeId": "00000000-0000-0000-0000-000000000101",
+    "userId": "00000000-0000-0000-0000-000000000012",
+    "text": "Great value for money! Affordable prices and generous portions. The food was flavorful and the service was excellent.",
+    "rating": 4,
+    "expectedTags": ["affordable", "delicious", "great-service"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000004",
+    "placeId": "00000000-0000-0000-0000-000000000102",
+    "userId": "00000000-0000-0000-0000-000000000013",
+    "text": "Terrible experience. Bad service, slow wait times, and the food was overpriced. The staff was rude and unhelpful.",
+    "rating": 1,
+    "expectedTags": ["bad-service", "slow-service", "overpriced", "rude-staff"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000005",
+    "placeId": "00000000-0000-0000-0000-000000000102",
+    "userId": "00000000-0000-0000-0000-000000000014",
+    "text": "Very noisy place, couldn't hear my companion. The food was okay but the atmosphere was too loud. Also quite expensive for what you get.",
+    "rating": 2,
+    "expectedTags": ["noisy", "overpriced"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000006",
+    "placeId": "00000000-0000-0000-0000-000000000103",
+    "userId": "00000000-0000-0000-0000-000000000015",
+    "text": "The place was dirty and unclean. Poor quality food and the service was terrible. Would not recommend.",
+    "rating": 1,
+    "expectedTags": ["dirty", "bad-service"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000007",
+    "placeId": "00000000-0000-0000-0000-000000000104",
+    "userId": "00000000-0000-0000-0000-000000000016",
+    "text": "Casual dining experience. The place was busy but the food was decent. Nothing special, just a regular meal.",
+    "rating": 3,
+    "expectedTags": ["casual", "busy"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000008",
+    "placeId": "00000000-0000-0000-0000-000000000105",
+    "userId": "00000000-0000-0000-0000-000000000017",
+    "text": "Nice outdoor seating area with parking available. The food was good and the atmosphere was relaxed. Great for a casual lunch.",
+    "rating": 4,
+    "expectedTags": ["outdoor-seating", "parking-available", "casual"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000009",
+    "placeId": "00000000-0000-0000-0000-000000000106",
+    "userId": "00000000-0000-0000-0000-000000000018",
+    "text": "Mixed experience. The food was delicious and the service started great, but then it got very slow. The place was also quite noisy. Good value though.",
+    "rating": 3,
+    "expectedTags": ["delicious", "slow-service", "noisy", "affordable"]
+  },
+  {
+    "reviewId": "00000000-0000-0000-0000-000000000010",
+    "placeId": "00000000-0000-0000-0000-000000000107",
+    "userId": "00000000-0000-0000-0000-000000000019",
+    "text": "Cozy and intimate atmosphere. The food was amazing and the service was excellent. Perfect for a romantic dinner. A bit pricey but worth it.",
+    "rating": 5,
+    "expectedTags": ["cozy", "romantic", "delicious", "great-service"]
+  }
+]
+
+
+
+

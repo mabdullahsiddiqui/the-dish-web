@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using TheDish.Common.Application.Common;
 using TheDish.Review.Application.DTOs;
+using TheDish.Review.Application.Events;
 using TheDish.Review.Application.Interfaces;
 using TheDish.Review.Domain.Entities;
 using ReviewEntity = TheDish.Review.Domain.Entities.Review;
@@ -13,17 +14,20 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
     private readonly IReviewRepository _reviewRepository;
     private readonly IGpsVerificationService _gpsVerificationService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<CreateReviewCommandHandler> _logger;
 
     public CreateReviewCommandHandler(
         IReviewRepository reviewRepository,
         IGpsVerificationService gpsVerificationService,
         IUnitOfWork unitOfWork,
+        IEventPublisher eventPublisher,
         ILogger<CreateReviewCommandHandler> logger)
     {
         _reviewRepository = reviewRepository;
         _gpsVerificationService = gpsVerificationService;
         _unitOfWork = unitOfWork;
+        _eventPublisher = eventPublisher;
         _logger = logger;
     }
 
@@ -73,6 +77,19 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
 
             await _reviewRepository.AddAsync(review, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Publish ReviewCreatedEvent to RabbitMQ
+            var reviewCreatedEvent = new ReviewCreatedEvent
+            {
+                ReviewId = review.Id,
+                PlaceId = review.PlaceId,
+                UserId = review.UserId,
+                Text = review.Text,
+                Rating = review.Rating,
+                CreatedAt = review.CreatedAt
+            };
+
+            await _eventPublisher.PublishReviewCreatedAsync(reviewCreatedEvent, cancellationToken);
 
             var reviewDto = await MapToDtoAsync(review, cancellationToken);
 

@@ -100,6 +100,31 @@ services:
     networks:
       - the-dish-network
 
+  ai-review-analysis:
+    build:
+      context: ./backend/src/Services
+      dockerfile: TheDish.AI.ReviewAnalysis.API/Dockerfile
+    container_name: the-dish-ai-review-analysis
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=thedish
+      - RabbitMQ__Password=thedish_dev_password
+      - Elasticsearch__Url=http://elasticsearch:9200
+    ports:
+      - "5004:80"
+    depends_on:
+      - rabbitmq
+      - elasticsearch
+    networks:
+      - the-dish-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 volumes:
   postgres_data:
   redis_data:

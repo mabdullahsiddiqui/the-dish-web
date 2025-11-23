@@ -11,6 +11,7 @@ interface Place {
   cuisine: string;
   image: string;
   rating: number;
+  reviewCount: number;
   isHalal?: boolean;
   trustScore?: number;
 }
@@ -68,25 +69,32 @@ export function PlaceCard3D({
             <p className="text-gray-300 mb-4">{place.cuisine}</p>
 
             {/* Animated rating */}
-            <div className="flex items-center gap-2">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5 text-yellow-400 transition-all duration-200"
-                    style={{
-                      transform: `scale(${i < Math.floor(place.rating) ? 1 : 0.8})`,
-                      transitionDelay: `${i * 50}ms`,
-                    }}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                  </svg>
-                ))}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 text-yellow-400 transition-all duration-200"
+                      style={{
+                        transform: `scale(${i < Math.floor(place.rating || 0) ? 1 : 0.8})`,
+                        transitionDelay: `${i * 50}ms`,
+                      }}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-white font-semibold">
+                  {(place.rating || 0).toFixed(1)}
+                </span>
               </div>
-              <span className="text-white font-semibold">{place.rating}</span>
+              <span className="text-gray-300 text-sm">
+                ({place.reviewCount || 0} {place.reviewCount === 1 ? 'review' : 'reviews'})
+              </span>
             </div>
 
             {/* Trust Score */}

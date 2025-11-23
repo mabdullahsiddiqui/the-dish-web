@@ -6,6 +6,7 @@ export interface PlaceCard3DData {
   cuisine: string;
   image: string;
   rating: number;
+  reviewCount: number;
   isHalal?: boolean;
   trustScore?: number;
 }
@@ -27,6 +28,7 @@ export function mapPlaceToCard3D(place: Place): PlaceCard3DData {
       : 'Restaurant',
     image: place.photos?.[0]?.url || '/placeholder-restaurant.jpg',
     rating: place.averageRating || 0,
+    reviewCount: place.reviewCount || 0,
     isHalal,
     trustScore: place.isVerified 
       ? Math.min(95, Math.max(60, Math.round((place.averageRating || 0) * 20))) 

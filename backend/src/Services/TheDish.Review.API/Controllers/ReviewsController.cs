@@ -234,6 +234,20 @@ public class ReviewsController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("{id}/analyze")]
+    public async Task<ActionResult<Response<ReviewAnalysisDto>>> GetReviewAnalysis(Guid id)
+    {
+        var query = new GetReviewAnalysisQuery { ReviewId = id };
+        var result = await _mediator.Send(query);
+
+        if (!result.Success)
+        {
+            return NotFound(result);
+        }
+
+        return Ok(result);
+    }
 }
 
 
