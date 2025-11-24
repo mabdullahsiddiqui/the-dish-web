@@ -23,6 +23,12 @@ builder.Services.AddPlaceInfrastructure(builder.Configuration);
 var applicationAssembly = typeof(TheDish.Place.Application.Commands.CreatePlaceCommand).Assembly;
 builder.Services.AddCommonInfrastructure(builder.Configuration, applicationAssembly);
 
+// Add Health Checks
+var placeDbConnectionString = builder.Configuration.GetConnectionString("PlaceDb") ?? 
+    "Host=localhost;Port=5432;Database=thedish;Username=thedish;Password=thedish_dev_password";
+builder.Services.AddHealthChecks()
+    .AddNpgSql(placeDbConnectionString, name: "postgresql");
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -47,6 +53,9 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 // Ensure database is created
 using (var scope = app.Services.CreateScope())

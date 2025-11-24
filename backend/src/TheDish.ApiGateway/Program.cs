@@ -59,6 +59,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -82,5 +85,8 @@ app.UseAuthorization();
 await app.UseOcelot();
 
 app.MapControllers();
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 app.Run();

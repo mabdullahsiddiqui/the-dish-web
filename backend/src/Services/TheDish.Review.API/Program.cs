@@ -47,6 +47,12 @@ builder.Services.AddReviewInfrastructure(builder.Configuration);
 var applicationAssembly = typeof(TheDish.Review.Application.Commands.CreateReviewCommand).Assembly;
 builder.Services.AddCommonInfrastructure(builder.Configuration, applicationAssembly);
 
+// Add Health Checks
+var reviewDbConnectionString = builder.Configuration.GetConnectionString("ReviewDb") ?? 
+    "Host=localhost;Port=5432;Database=thedish;Username=thedish;Password=thedish_dev_password";
+builder.Services.AddHealthChecks()
+    .AddNpgSql(reviewDbConnectionString, name: "postgresql");
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -72,6 +78,9 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 // Ensure database is created
 using (var scope = app.Services.CreateScope())

@@ -69,7 +69,7 @@ export function PlaceCard3D({
             <p className="text-gray-300 mb-4">{place.cuisine}</p>
 
             {/* Animated rating */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
@@ -88,13 +88,18 @@ export function PlaceCard3D({
                     </svg>
                   ))}
                 </div>
-                <span className="text-white font-semibold">
+                <span className="text-white font-semibold text-lg">
                   {(place.rating || 0).toFixed(1)}
                 </span>
               </div>
-              <span className="text-gray-300 text-sm">
-                ({place.reviewCount || 0} {place.reviewCount === 1 ? 'review' : 'reviews'})
-              </span>
+              <div className="flex items-center gap-1 text-gray-300">
+                <span className="text-sm font-medium text-white/90">
+                  {place.reviewCount || 0}
+                </span>
+                <span className="text-sm">
+                  {place.reviewCount === 1 ? 'review' : 'reviews'}
+                </span>
+              </div>
             </div>
 
             {/* Trust Score */}

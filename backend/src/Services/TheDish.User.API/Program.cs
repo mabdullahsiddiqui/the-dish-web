@@ -19,6 +19,12 @@ builder.Services.AddUserInfrastructure(builder.Configuration);
 var applicationAssembly = typeof(TheDish.User.Application.Commands.RegisterUserCommand).Assembly;
 builder.Services.AddCommonInfrastructure(builder.Configuration, applicationAssembly);
 
+// Add Health Checks
+var userDbConnectionString = builder.Configuration.GetConnectionString("UserDb") ?? 
+    "Host=localhost;Port=5432;Database=thedish_users;Username=thedish;Password=thedish_dev_password";
+builder.Services.AddHealthChecks()
+    .AddNpgSql(userDbConnectionString, name: "postgresql");
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -43,6 +49,9 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+
+// Health check endpoint
+app.MapHealthChecks("/health");
 
 // Apply database migrations
 using (var scope = app.Services.CreateScope())
