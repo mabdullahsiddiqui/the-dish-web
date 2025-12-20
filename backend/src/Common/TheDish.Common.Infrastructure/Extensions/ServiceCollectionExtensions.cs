@@ -4,6 +4,10 @@ using TheDish.Common.Application.Interfaces;
 using TheDish.Common.Application.Behaviors;
 using MediatR;
 using System.Reflection;
+using Amazon.S3;
+using Microsoft.Extensions.Options;
+using TheDish.Common.Infrastructure.Configuration;
+using TheDish.Common.Infrastructure.Services;
 
 namespace TheDish.Common.Infrastructure.Extensions;
 
@@ -22,6 +26,12 @@ public static class ServiceCollectionExtensions
         
         // Add pipeline behaviors
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
+        // AWS S3
+        services.Configure<AwsS3Settings>(configuration.GetSection("AWS:S3"));
+        services.AddDefaultAWSOptions(configuration.GetAWSOptions());
+        services.AddAWSService<IAmazonS3>();
+        services.AddScoped<IFileStorageService, AwsS3Service>();
 
         return services;
     }

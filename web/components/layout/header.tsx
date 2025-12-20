@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 import { AnimatedSearchBar } from '@/components/search/AnimatedSearchBar';
 import { Button3D } from '@/components/ui/Button3D';
 import { useAuth } from '@/hooks/useAuth';
@@ -64,19 +64,36 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
-                <Link href="/profile" className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
-                  <User className="w-4 h-4" />
-                  <span>{user.firstName}</span>
-                </Link>
-                <Button3D
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="flex items-center space-x-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </Button3D>
+                <div className="relative group">
+                  <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
+                    <User className="w-4 h-4" />
+                    <span>{user.firstName}</span>
+                  </button>
+                  {/* Dropdown */}
+                  <div className="absolute right-0 mt-2 w-48 glass-card border border-white/10 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-t-lg transition-colors"
+                    >
+                      <User className="w-4 h-4 inline mr-2" />
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 inline mr-2" />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-b-lg transition-colors border-t border-white/10"
+                    >
+                      <LogOut className="w-4 h-4 inline mr-2" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -152,7 +169,15 @@ export function Header() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <User className="w-4 h-4" />
-                    <span>{user.firstName} {user.lastName}</span>
+                    <span>My Profile</span>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center space-x-2 px-3 py-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Settings</span>
                   </Link>
                   <button
                     onClick={() => {

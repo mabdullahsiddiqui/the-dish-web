@@ -34,6 +34,7 @@ export interface CreateReviewRequest {
   placeId: string;
   rating: number;
   text: string;
+  photoUrls?: string[];
   checkInLatitude?: number;
   checkInLongitude?: number;
   placeLatitude: number;

@@ -98,3 +98,6 @@ secrets/
 **/appsettings.*.json
 !**/appsettings.json
 
+# Secrets in Docs
+Docs/*.csv
+

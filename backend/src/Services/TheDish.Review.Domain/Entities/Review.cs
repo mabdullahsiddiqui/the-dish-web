@@ -99,6 +99,19 @@ public class Review : AggregateRoot
         }
     }
 
+    public void AddPhoto(string url, Guid uploadedBy, string? caption = null)
+    {
+        var photo = new ReviewPhoto(Id, url, uploadedBy, caption);
+        Photos.Add(photo);
+        
+        // Keep PhotoUrls in sync
+        if (!PhotoUrls.Contains(url))
+        {
+            PhotoUrls.Add(url);
+        }
+        UpdateTimestamp();
+    }
+
     public void SetDietaryAccuracy(Dictionary<string, string> dietaryAccuracy)
     {
         DietaryAccuracy = dietaryAccuracy ?? new Dictionary<string, string>();

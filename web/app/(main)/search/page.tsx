@@ -94,7 +94,7 @@ function SearchPageContent() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">Search Restaurants</h1>
-          
+
           {/* Search Bar */}
           <div className="mb-6">
             <AnimatedSearchBar
@@ -125,21 +125,19 @@ function SearchPageContent() {
                 <div className="flex items-center gap-1 glass-card p-1 rounded-lg">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'grid'
+                    className={`p-2 rounded transition-colors ${viewMode === 'grid'
                         ? 'bg-indigo-500 text-white'
                         : 'text-gray-300 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Grid className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'list'
+                    className={`p-2 rounded transition-colors ${viewMode === 'list'
                         ? 'bg-indigo-500 text-white'
                         : 'text-gray-300 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -156,12 +154,66 @@ function SearchPageContent() {
                   {
                     title: 'Cuisine Types',
                     options: [
-                      { label: 'Middle Eastern', value: 'middle-eastern' },
-                      { label: 'Asian', value: 'asian' },
+                      { label: 'Middle Eastern', value: 'Middle Eastern' },
+                      { label: 'Asian', value: 'Asian' },
+                      { label: 'Italian', value: 'Italian' },
+                      { label: 'American', value: 'American' },
+                      { label: 'Mexican', value: 'Mexican' },
+                      { label: 'Indian', value: 'Indian' },
+                      { label: 'Japanese', value: 'Japanese' },
+                      { label: 'Thai', value: 'Thai' },
+                      { label: 'Mediterranean', value: 'Mediterranean' },
+                      { label: 'French', value: 'French' },
                     ],
                     selected: filters.cuisineTypes || [],
                     onSelectionChange: (values) => {
                       handleFiltersChange({ ...filters, cuisineTypes: values });
+                    },
+                  },
+                  {
+                    title: 'Dietary Preferences',
+                    options: [
+                      { label: 'Halal', value: 'Halal' },
+                      { label: 'Kosher', value: 'Kosher' },
+                      { label: 'Vegan', value: 'Vegan' },
+                      { label: 'Vegetarian', value: 'Vegetarian' },
+                      { label: 'Gluten-Free', value: 'Gluten-Free' },
+                      { label: 'Dairy-Free', value: 'Dairy-Free' },
+                    ],
+                    selected: filters.dietaryTags || [],
+                    onSelectionChange: (values) => {
+                      handleFiltersChange({ ...filters, dietaryTags: values });
+                    },
+                  },
+                  {
+                    title: 'Price Range',
+                    options: [
+                      { label: '$ (Cheap)', value: '1' },
+                      { label: '$$ (Moderate)', value: '2' },
+                      { label: '$$$ (Expensive)', value: '3' },
+                      { label: '$$$$ (Luxury)', value: '4' },
+                    ],
+                    selected: filters.priceRange ? filters.priceRange.map(String) : [],
+                    onSelectionChange: (values) => {
+                      // Convert string values back to numbers for the filter state
+                      const prices = values.map(Number);
+                      const min = prices.length > 0 ? Math.min(...prices) : 1;
+                      const max = prices.length > 0 ? Math.max(...prices) : 4;
+                      handleFiltersChange({ ...filters, priceRange: [min, max] });
+                    },
+                  },
+                  {
+                    title: 'Minimum Rating',
+                    options: [
+                      { label: 'Any Rating', value: '0' },
+                      { label: '3+ Stars', value: '3' },
+                      { label: '4+ Stars', value: '4' },
+                      { label: '4.5+ Stars', value: '4.5' },
+                    ],
+                    selected: [filters.minRating.toString()],
+                    onSelectionChange: (values) => {
+                      const rating = values.length > 0 ? Number(values[values.length - 1]) : 0;
+                      handleFiltersChange({ ...filters, minRating: rating });
                     },
                   },
                 ]}
@@ -172,81 +224,79 @@ function SearchPageContent() {
           )}
         </div>
 
-      {/* Results */}
-      <div className="space-y-6">
-        {isLoading ? (
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1'
-          }`}>
-            {[...Array(6)].map((_, i) => (
-              <PlaceCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : error ? (
-          <ErrorState
-            type="error"
-            title="Error loading search results"
-            message={error.message || 'Please try again later'}
-            action={{
-              label: 'Try Again',
-              onClick: () => refetch(),
-            }}
-          />
-        ) : places.length === 0 ? (
-          <EmptyState
-            variant="search"
-            title="No Restaurants Found"
-            description="We couldn't find any restaurants matching your search. Try adjusting your filters or search terms to discover great places near you."
-            action={{
-              label: 'Clear Search',
-              onClick: () => {
-                setSearchQuery('');
-                setFilters({
-                  cuisineTypes: [],
-                  dietaryTags: [],
-                  priceRange: [1, 4],
-                  minRating: 0,
-                  radiusKm: 25,
-                });
-                setCurrentPage(1);
-              },
-            }}
-          />
-        ) : (
-          <>
-            {/* Results Grid */}
-            <StaggerChildren
-              className={`grid gap-6 ${
-                viewMode === 'grid'
-                  ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-                  : 'grid-cols-1 max-w-4xl'
-              }`}
-            >
-              {places.map((place) => (
-                <PlaceCard3D
-                  key={place.id}
-                  place={mapPlaceToCard3D(place)}
-                  onClick={() => router.push(`/places/${place.id}`)}
-                />
+        {/* Results */}
+        <div className="space-y-6">
+          {isLoading ? (
+            <div className={`grid gap-6 ${viewMode === 'grid'
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                : 'grid-cols-1'
+              }`}>
+              {[...Array(6)].map((_, i) => (
+                <PlaceCardSkeleton key={i} />
               ))}
-            </StaggerChildren>
+            </div>
+          ) : error ? (
+            <ErrorState
+              type="error"
+              title="Error loading search results"
+              message={error.message || 'Please try again later'}
+              action={{
+                label: 'Try Again',
+                onClick: () => refetch(),
+              }}
+            />
+          ) : places.length === 0 ? (
+            <EmptyState
+              variant="search"
+              title="No Restaurants Found"
+              description="We couldn't find any restaurants matching your search. Try adjusting your filters or search terms to discover great places near you."
+              action={{
+                label: 'Clear Search',
+                onClick: () => {
+                  setSearchQuery('');
+                  setFilters({
+                    cuisineTypes: [],
+                    dietaryTags: [],
+                    priceRange: [1, 4],
+                    minRating: 0,
+                    radiusKm: 25,
+                  });
+                  setCurrentPage(1);
+                },
+              }}
+            />
+          ) : (
+            <>
+              {/* Results Grid */}
+              <StaggerChildren
+                className={`grid gap-6 ${viewMode === 'grid'
+                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                    : 'grid-cols-1 max-w-4xl'
+                  }`}
+              >
+                {places.map((place) => (
+                  <PlaceCard3D
+                    key={place.id}
+                    place={mapPlaceToCard3D(place)}
+                    onClick={() => router.push(`/places/${place.id}`)}
+                  />
+                ))}
+              </StaggerChildren>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
-          </>
-        )}
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

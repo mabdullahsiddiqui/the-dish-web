@@ -10,6 +10,7 @@ public class CreateReviewCommand : IRequest<Response<ReviewDto>>
     public Guid PlaceId { get; set; }
     public int Rating { get; set; }
     public string Text { get; set; } = string.Empty;
+    public List<string>? PhotoUrls { get; set; }
     public Dictionary<string, string>? DietaryAccuracy { get; set; }
     public double? CheckInLatitude { get; set; }
     public double? CheckInLongitude { get; set; }

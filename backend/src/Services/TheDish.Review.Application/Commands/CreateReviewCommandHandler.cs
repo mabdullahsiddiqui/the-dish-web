@@ -55,6 +55,15 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, R
                 review.SetDietaryAccuracy(request.DietaryAccuracy);
             }
 
+            // Add photos if provided
+            if (request.PhotoUrls != null && request.PhotoUrls.Any())
+            {
+                foreach (var url in request.PhotoUrls)
+                {
+                    review.AddPhoto(url, request.UserId);
+                }
+            }
+
             // GPS verification
             if (request.CheckInLatitude.HasValue && 
                 request.CheckInLongitude.HasValue &&
